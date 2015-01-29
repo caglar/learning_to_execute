@@ -208,9 +208,11 @@ function main()
   cmd:option('-gpuidx', 1, 'Index of GPU on which job should be executed.')
   cmd:option('-target_length', 6, 'Length of the target expression.')
   cmd:option('-target_nesting', 3, 'Nesting of the target expression.')
+
   -- Available strategies: baseline, naive, mix, blend.
   cmd:option('-strategy', 'blend', 'Scheduling strategy.')
   cmd:text()
+
   local opt = cmd:parse(arg)
 
   init_gpu(opt.gpuidx)
@@ -226,24 +228,28 @@ function main()
                  target_accuracy=0.95,
                  current_length=1,
                  current_nesting=1}
+  
   state_train = {hardness=_G[opt.strategy],
                  len=10001,
                  seed=1,
                  kind=0,
                  batch_size=params.batch_size,
                  name="Training"}
+  
   state_val =   {hardness=current_hardness,
                  len=501,
                  seed=1,
                  kind=1,
                  batch_size=params.batch_size,
                  name="Validation"}
+  
   state_test =  {hardness=target_hardness,
                  len=501,
                  seed=1,
                  kind=2,
                  batch_size=params.batch_size,
                  name="Test"}
+  
   print("Network parameters:")
   print(params)
   local states = {state_train, state_val, state_test}
@@ -282,15 +288,18 @@ function main()
             ', current nesting=' .. params.current_nesting ..
             ', characters per sec.=' .. cps ..
             ', learning rate=' .. string.format("%.3f", params.learningRate))
-      if (state_val.acc > params.target_accuracy) or
+        if (state_val.acc > params.target_accuracy) or
          (#train_accs >= 5 and 
           train_accs[#train_accs - 4] > state_train.acc) then
+
         if not make_harder() then
           params.learningRate = params.learningRate * 0.8
         end
+
         if params.learningRate < 1e-3 then
           break
         end
+
         load_data(state_train)
         load_data(state_val)
         train_accs = {}
