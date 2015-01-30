@@ -1,24 +1,26 @@
 import numpy as np
 import cPickle as pkl
 
-sym_dict = {"nil": 0}
+src_sym_dict = {"nil": 0}
+tgt_sym_dict = {"eos": 0}
 X = []
 y = []
 
-def add_to_dict(c):
+def add_to_dict(c, sym_dict):
     values = sym_dict.values()
     max_val = np.max(values)
     new_idx = max_val + 1
     sym_dict[c] = new_idx
+
 
 def add_to_target(target, new_tar=None):
     char_tars = list(target)
     if new_tar is None:
         new_tar = []
     for ct in char_tars:
-        if ct not in sym_dict:
-            add_to_dict(ct)
-        new_tar.append(sym_dict[ct])
+        if ct not in tgt_sym_dict:
+            add_to_dict(ct, tgt_sym_dict)
+        new_tar.append(tgt_sym_dict[ct])
     y.append(new_tar)
     return new_tar
 
@@ -27,9 +29,9 @@ def add_to_input(inp, new_inp=None):
     if new_inp is None:
         new_inp = []
     for ci in char_inps:
-        if ci not in sym_dict:
-            add_to_dict(ci)
-        new_inp.append(sym_dict[ci])
+        if ci not in src_sym_dict:
+            add_to_dict(ci, src_sym_dict)
+        new_inp.append(src_sym_dict[ci])
     return new_inp
 
 def create_file(filen):
@@ -74,8 +76,12 @@ def create_file(filen):
     pkl.dump(data, open(pkl_data_name, "w"))
     print "Saved to %s, successfully." % pkl_data_name
 
-    pkl_dict_name = "%s_dict.pkl" % filen[:-4]
-    pkl.dump(sym_dict, open(pkl_dict_name, "w"))
+    pkl_src_dict_name = "%s_src_dict.pkl" % filen[:-4]
+    pkl.dump(src_sym_dict, open(pkl_dict_name, "w"))
+    print "Saved to %s, successfully." % pkl_dict_name
+
+    pkl_tgt_dict_name = "%s_tgt_dict.pkl" % filen[:-4]
+    pkl.dump(tgt_sym_dict, open(pkl_dict_name, "w"))
     print "Saved to %s, successfully." % pkl_dict_name
 
 create_file("data_400k_mix_cur.txt")
